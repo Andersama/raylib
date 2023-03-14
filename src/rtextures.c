@@ -3600,8 +3600,8 @@ void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2
             float top_edge_y = source.y / height;
 
             // Should communicate the non-branchy version of this expression to the compiler
-            float l_edge = flipX ? right_edge_x : left_edge_x;
-            float r_edge = flipX ? left_edge_x : right_edge_x;
+            float l_edge = (flipX * right_edge_x) + (!flipX * left_edge_x);//flipX ? right_edge_x : left_edge_x;
+            float r_edge = (flipX * left_edge_x) + (!flipX * right_edge_x);//flipX ? left_edge_x : right_edge_x;
 
             // Top-left corner for texture and quad
             //if (flipX) rlTexCoord2f(right_edge_x, top_edge_y);
