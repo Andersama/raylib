@@ -1375,6 +1375,9 @@ RLAPI void DrawTextCodepoints(Font font, const int *codepoints, int count, Vecto
 // Text font info functions
 RLAPI int MeasureText(const char *text, int fontSize);                                      // Measure string width for default font
 RLAPI Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing);    // Measure string size for Font
+RLAPI int MeasureTextView(const char* text, const char* textEnd, int fontSize);                                      // Measure string width for default font
+RLAPI Vector2 MeasureTextViewEx(Font font, const char* text, const char* textEnd, float fontSize, float spacing);    // Measure string size for Font
+
 RLAPI int GetGlyphIndex(Font font, int codepoint);                                          // Get glyph index position in font for a codepoint (unicode character), fallback to '?' if not found
 RLAPI GlyphInfo GetGlyphInfo(Font font, int codepoint);                                     // Get glyph font info data for a codepoint (unicode character), fallback to '?' if not found
 RLAPI Rectangle GetGlyphAtlasRec(Font font, int codepoint);                                 // Get glyph rectangle in font atlas for a codepoint (unicode character), fallback to '?' if not found

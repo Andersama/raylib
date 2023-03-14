@@ -1194,14 +1194,32 @@ int MeasureText(const char *text, int fontSize)
     return (int)textSize.x;
 }
 
+// Measure string width for default font
+int MeasureTextView(const char* text, const char* textEnd, int fontSize) {
+    Vector2 textSize = { 0.0f, 0.0f };
+
+    // Check if default font has been loaded
+    if (GetFontDefault().texture.id != 0)
+    {
+        int defaultFontSize = 10;   // Default Font chars height in pixel
+        if (fontSize < defaultFontSize) fontSize = defaultFontSize;
+        int spacing = fontSize / defaultFontSize;
+
+        textSize = MeasureTextViewEx(GetFontDefault(), text, textEnd, (float)fontSize, (float)spacing);
+    }
+
+    return (int)textSize.x;
+}
+
 // Measure string size for Font
-Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing)
+Vector2 MeasureTextViewEx(Font font, const char* text, const char* textEnd, float fontSize, float spacing)
 {
     Vector2 textSize = { 0 };
 
     if ((font.texture.id == 0) || (text == NULL)) return textSize;
 
-    int size = TextLength(text);    // Get size in bytes of text
+    //int size = TextLength(text);    
+    int size = textEnd - text; // Get size in bytes of text
     int tempByteCounter = 0;        // Used to count longer text line num chars
     int byteCounter = 0;
 
@@ -1209,7 +1227,7 @@ Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing
     float tempTextWidth = 0.0f;     // Used to count longer text line width
 
     float textHeight = (float)font.baseSize;
-    float scaleFactor = fontSize/(float)font.baseSize;
+    float scaleFactor = fontSize / (float)font.baseSize;
 
     int letter = 0;                 // Current character
     int index = 0;                  // Index position in sprite font
@@ -1237,7 +1255,7 @@ Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing
             if (tempTextWidth < textWidth) tempTextWidth = textWidth;
             byteCounter = 0;
             textWidth = 0;
-            textHeight += ((float)font.baseSize*1.5f); // NOTE: Fixed line spacing of 1.5 lines
+            textHeight += ((float)font.baseSize * 1.5f); // NOTE: Fixed line spacing of 1.5 lines
         }
 
         if (tempByteCounter < byteCounter) tempByteCounter = byteCounter;
@@ -1245,10 +1263,15 @@ Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing
 
     if (tempTextWidth < textWidth) tempTextWidth = textWidth;
 
-    textSize.x = tempTextWidth*scaleFactor + (float)((tempByteCounter - 1)*spacing); // Adds chars spacing to measure
-    textSize.y = textHeight*scaleFactor;
+    textSize.x = tempTextWidth * scaleFactor + (float)((tempByteCounter - 1) * spacing); // Adds chars spacing to measure
+    textSize.y = textHeight * scaleFactor;
 
     return textSize;
+}
+Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing)
+{
+    int size = TextLength(text);    // Get size in bytes of text
+    return MeasureTextViewEx(font, text, text + size, fontSize, spacing);
 }
 
 // Get index position for a unicode character on font
