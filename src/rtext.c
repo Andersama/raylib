@@ -1015,8 +1015,9 @@ void DrawFPS(int posX, int posY)
     Color color = LIME;                         // Good FPS
     int fps = GetFPS();
 
-    if ((fps < 30) && (fps >= 15)) color = ORANGE;  // Warning FPS
-    else if (fps < 15) color = RED;             // Low FPS
+    color = (fps >= 30) ? color : (fps >= 15) ? ORANGE : RED;
+    //if ((fps < 30) && (fps >= 15)) color = ORANGE;  // Warning FPS
+    //else if (fps < 15) color = RED;             // Low FPS
 
     DrawText(TextFormat("%2i FPS", GetFPS()), posX, posY, 20, color);
 }
@@ -1039,20 +1040,18 @@ void DrawText(const char *text, int posX, int posY, int fontSize, Color color)
     }
 }
 
-// Draw text using Font
-// NOTE: chars spacing is NOT proportional to fontSize
-void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint)
+void DrawTextViewEx(Font font, const char* text, const char* textEnd, Vector2 position, float fontSize, float spacing, Color tint)
 {
     if (font.texture.id == 0) font = GetFontDefault();  // Security check in case of not valid font
 
-    int size = TextLength(text);    // Total size in bytes of the text, scanned by codepoints in loop
+    int bytes = textEnd - text; // Total size in bytes of the text, scanned by codepoints in loop
 
     int textOffsetY = 0;            // Offset between lines (on linebreak '\n')
     float textOffsetX = 0.0f;       // Offset X to next character to draw
 
-    float scaleFactor = fontSize/font.baseSize;         // Character quad scaling factor
+    float scaleFactor = fontSize / font.baseSize;         // Character quad scaling factor
 
-    for (int i = 0; i < size;)
+    for (int i = 0; i < bytes;)
     {
         // Get next codepoint from byte string and glyph index in font
         int codepointByteCount = 0;
@@ -1067,22 +1066,44 @@ void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, f
         {
             // NOTE: Fixed line spacing of 1.5 line-height
             // TODO: Support custom line spacing defined by user
-            textOffsetY += (int)((font.baseSize + font.baseSize/2.0f)*scaleFactor);
+            textOffsetY += (int)((font.baseSize + font.baseSize / 2.0f) * scaleFactor);
             textOffsetX = 0.0f;
         }
         else
         {
             if ((codepoint != ' ') && (codepoint != '\t'))
             {
-                DrawTextCodepoint(font, codepoint, (Vector2){ position.x + textOffsetX, position.y + textOffsetY }, fontSize, tint);
+                DrawTextCodepoint(font, codepoint, (Vector2) { position.x + textOffsetX, position.y + textOffsetY }, fontSize, tint);
             }
 
-            if (font.glyphs[index].advanceX == 0) textOffsetX += ((float)font.recs[index].width*scaleFactor + spacing);
-            else textOffsetX += ((float)font.glyphs[index].advanceX*scaleFactor + spacing);
+            if (font.glyphs[index].advanceX == 0) textOffsetX += ((float)font.recs[index].width * scaleFactor + spacing);
+            else textOffsetX += ((float)font.glyphs[index].advanceX * scaleFactor + spacing);
         }
 
         i += codepointByteCount;   // Move text bytes counter to next codepoint
     }
+}
+
+// Draw text using Font and pro parameters (rotation)
+void DrawTextViewPro(Font font, const char* text, const char* textEnd, Vector2 position, Vector2 origin, float rotation, float fontSize, float spacing, Color tint)
+{
+    rlPushMatrix();
+
+    rlTranslatef(position.x, position.y, 0.0f);
+    rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
+    rlTranslatef(-origin.x, -origin.y, 0.0f);
+
+    DrawTextViewEx(font, text, textEnd, (Vector2) { 0.0f, 0.0f }, fontSize, spacing, tint);
+
+    rlPopMatrix();
+}
+
+// Draw text using Font
+// NOTE: chars spacing is NOT proportional to fontSize
+void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint)
+{
+    int size = TextLength(text);    // Total size in bytes of the text, scanned by codepoints in loop
+    DrawTextViewEx(font, text, text + size, position, fontSize, spacing, tint);
 }
 
 // Draw text using Font and pro parameters (rotation)
