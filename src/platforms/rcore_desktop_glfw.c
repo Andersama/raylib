@@ -1351,6 +1351,8 @@ int InitPlatform(void)
     // additionally auto iconify restores the hardware resolution of the monitor if the window that loses focus is a fullscreen window
     glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
 
+    // Keep flags to restore after initialization (for flags not supported on initialization)   
+    unsigned int original_core_flags = CORE.Window.flags;
     // Check window creation flags
     if ((CORE.Window.flags & FLAG_FULLSCREEN_MODE) > 0) CORE.Window.fullscreen = true;
 
@@ -1364,10 +1366,10 @@ int InitPlatform(void)
     else glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);  // Avoid window being resizable
 
     // Disable FLAG_WINDOW_MINIMIZED, not supported on initialization
-    if ((CORE.Window.flags & FLAG_WINDOW_MINIMIZED) > 0) CORE.Window.flags &= ~FLAG_WINDOW_MINIMIZED;
+    CORE.Window.flags &= ~FLAG_WINDOW_MINIMIZED;
 
     // Disable FLAG_WINDOW_MAXIMIZED, not supported on initialization
-    if ((CORE.Window.flags & FLAG_WINDOW_MAXIMIZED) > 0) CORE.Window.flags &= ~FLAG_WINDOW_MAXIMIZED;
+    CORE.Window.flags &= ~FLAG_WINDOW_MAXIMIZED;
 
     if ((CORE.Window.flags & FLAG_WINDOW_UNFOCUSED) > 0) glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
     else glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
@@ -1709,7 +1711,10 @@ int InitPlatform(void)
     char *glfwPlatform = "";
     switch (glfwGetPlatform())
     {
-        case GLFW_PLATFORM_WIN32: glfwPlatform = "Win32"; break;
+        case GLFW_PLATFORM_WIN32: 
+            glfwPlatform = "Win32";
+            SetWindowState(original_window_flags);
+            break;
         case GLFW_PLATFORM_COCOA: glfwPlatform = "Cocoa"; break;
         case GLFW_PLATFORM_WAYLAND: glfwPlatform = "Wayland"; break;
         case GLFW_PLATFORM_X11: glfwPlatform = "X11"; break;
